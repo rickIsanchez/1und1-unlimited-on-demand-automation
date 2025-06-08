@@ -101,10 +101,10 @@ class ControlCenterAuth:
                 timeout=30,
                 impersonate="chrome110",
                 allow_redirects=True,
-                max_redirects=max_redirects
+                max_redirects=max_redirects,
+                verify=False  # SSL-Zertifikatverifikation deaktivieren
             )
-            
-            if 'control_center_web_bap' in response.url:
+            if 'control_center_web_bap' in response.url or 'control_center_web_bs' in response.url:
                 logger.info(f"OAuth2-Autorisierungsprozess abgeschlossen.")
             else:
                 logger.error(f"OAuth2-Autorisierungsprozess nicht abgeschlossen.")
@@ -543,7 +543,8 @@ class ControlCenterAuth:
                 timeout=30,
                 impersonate="chrome110",
                 allow_redirects=True,
-                max_redirects=10
+                max_redirects=10,
+                verify=False  # SSL-Zertifikatverifikation deaktivieren
             )
 
             login_success = False
@@ -843,41 +844,22 @@ if __name__ == "__main__":
     
     # Lade Umgebungsvariablen aus .env-Datei
     load_dotenv()
-    
-    # Prüfe, ob ein Argument übergeben wurde
-    if len(sys.argv) > 1 and sys.argv[1] == "guest":
-        # Erstelle eine Gast-Session
+    from src.config import get_credentials
+
+    credentials = get_credentials()
+    print(credentials)
+
+    if credentials["username"] and credentials["password"]:
+        print(f"Verwende Anmeldedaten aus .env-Datei: {credentials['username']}")
+        auth = ControlCenterAuth()
+        auth.login(credentials["username"], credentials["password"])
+    elif credentials["guest_url"]:
+        print(f"Verwende Gast-Link aus .env-Datei: {credentials['guest_url']}")
         auth = ControlCenterGuestAuth()
-        
-        # Prüfe, ob eine Gast-URL als zweites Argument übergeben wurde
-        guest_url = None
-        if len(sys.argv) > 2:
-            guest_url = sys.argv[2]
-            print(f"Verwende übergebenen Gast-Link: {guest_url}")
-        else:
-            # Versuche, den Gast-Link aus der Umgebungsvariable zu laden
-            guest_url = os.getenv("GUEST_URL")
-            if guest_url:
-                print(f"Verwende Gast-Link aus .env-Datei: {guest_url}")
-            else:
-                print("Fehler: Kein Gast-Link angegeben und keine GUEST_URL in .env-Datei gefunden")
-                print("Verwendung: python -m src.auth.login guest [url]")
-                print("  oder setze GUEST_URL in der .env-Datei")
-                sys.exit(1)
-        
-        # Erstelle oder lade eine Gast-Session
-        session, success = auth.get_guest_session(guest_url=guest_url)
-        
-        if success:
-            print(f"Gast-Session erfolgreich erstellt mit ID: {auth.guest_id}")
-            print(auth.session.cookies)
-        else:
-            print("Fehler beim Erstellen der Gast-Session")
+        auth.create_guest_session(credentials["guest_url"])
     else:
-        # Normaler Login-Prozess
-        # Hier könnte ein interaktiver Login-Prozess implementiert werden
+        print("Fehler: Keine Anmeldedaten oder Gast-Link angegeben und keine USERNAME und PASSWORD oder GUEST_URL in .env-Datei gefunden")
         print("Verwendung: python -m src.auth.login [guest] [url]")
-        print("  guest: Erstellt eine Gast-Session")
-        print("  url: Optional. Die vollständige URL für den Gastzugriff (z.B. https://www.1und1.de/mc/tsxI7HY4j_)")
-        print("  ohne URL-Argument: Verwendet GUEST_URL aus der .env-Datei")
-        print("  ohne Argument: Zeigt diese Hilfe an")
+        print("  oder setze USERNAME und PASSWORD oder GUEST_URL in der .env-Datei")
+        sys.exit(1)
+    

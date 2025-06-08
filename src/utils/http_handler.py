@@ -73,7 +73,8 @@ class HttpClient:
             headers=request_headers,
             timeout=REQUEST_TIMEOUT,
             impersonate="chrome110",
-            allow_redirects=allow_redirects
+            allow_redirects=allow_redirects,
+            verify=False  # SSL-Zertifikatverifikation deaktivieren
         )
         
         self.update_cookies(response)
@@ -114,7 +115,8 @@ class HttpClient:
             headers=request_headers,
             timeout=REQUEST_TIMEOUT,
             impersonate="chrome110",
-            allow_redirects=allow_redirects
+            allow_redirects=allow_redirects,
+            verify=False  # SSL-Zertifikatverifikation deaktivieren
         )
         
         self.update_cookies(response)
