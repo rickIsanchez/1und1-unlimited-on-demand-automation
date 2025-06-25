@@ -83,7 +83,9 @@ CONTROL_CENTER_USERNAME=ihre-email@beispiel.de    # Ihre 1&1-Zugangsdaten (E-Mai
 CONTROL_CENTER_PASSWORD=ihr-passwort              # Ihr 1&1-Passwort
 
 # Alternativ: Gast-Link für den Zugriff ohne Anmeldedaten
-# Beispiel: https://www.1und1.de/mc/tsxI7HY4j_
+# Beispiel: https://www.1und1.de/mc/tsxI7HY4j_...
+# Diese Links werden automatisch per SMS gesendet, wenn Sie 80% Ihres Datenvolumens erreichen
+# Hinweis: Gast-Links sind zeitlich begrenzt und laufen nach einigen Tagen/Wochen ab, sofern nicht in Verwendung!
 GUEST_URL=
 
 # Vertrags-ID(s) - finden Sie im Control Center unter "Meine Produkte"
@@ -117,7 +119,7 @@ LOGGER_USE_COLORS=false                          # Farbige Logs aktivieren/deakt
 
 - **Authentifizierung**: Sie haben zwei Möglichkeiten:
   - Standard-Login mit Benutzername und Passwort
-  - Gast-Link für den Zugriff ohne Anmeldedaten (nützlich für automatisierte Systeme)
+  - Gast-Link für den Zugriff ohne Anmeldedaten (sicherer, da keine Passwörter gespeichert werden)
 - **Schwellenwert**: Wählen Sie einen Wert, der zu Ihrem Nutzungsverhalten passt. Für intensive Nutzer empfehlen wir 1-2 GB.
 - **Prüfintervalle**: 
   - Bei niedriger Datennutzung können längere Intervalle (z.B. 120-300 Sekunden) ausreichen.
@@ -130,9 +132,34 @@ LOGGER_USE_COLORS=false                          # Farbige Logs aktivieren/deakt
   - Bei Debugging-Problemen empfiehlt es sich, die Aufbewahrungsdauer zu erhöhen (z.B. auf 24-48 Stunden)
   - Deaktivieren Sie farbige Logs für bessere Kompatibilität mit bestimmten Systemen wie Ubuntu Cockpit
 
-## 🔍 Verwendung
+### 🔐 Gast-Link-Authentifizierung - Detaillierte Anleitung
 
-### Einfache Anmeldung und Verbrauchsdaten abrufen
+Die Gast-Link-Authentifizierung ist das **sicherere Verfahren**, da keine Passwörter in der Konfigurationsdatei gespeichert werden müssen. Hier die vollständige Anleitung:
+
+#### Wie erhalten Sie einen Gast-Link?
+
+1. **Automatisch per SMS**: 1&1 sendet automatisch Gast-Links per SMS, wenn Sie 80% Ihres Datenvolumens erreichen
+2. **Link-Format**: Der Link hat die Form `https://www.1und1.de/mc/EINDEUTIGES_TOKEN`
+3. **Beispiel-SMS**: "Ihr Datenvolumen ist zu 80% aufgebraucht. Hier können Sie zusätzliches Volumen buchen: https://www.1und1.de/mc/EINDEUTIGES_TOKEN"
+
+#### Gast-Link in der .env-Datei konfigurieren:
+
+```env
+# Gast-Link aus der SMS von 1&1 eintragen
+GUEST_URL=https://www.1und1.de/mc/EINDEUTIGES_TOKEN
+
+# Standard-Anmeldedaten leer lassen, wenn Gast-Link verwendet wird
+CONTROL_CENTER_USERNAME=
+CONTROL_CENTER_PASSWORD=
+```
+
+#### ⚠️ Wichtige Hinweise zu Gast-Links:
+
+- **Zeitlich begrenzt**: Gast-Links laufen nach einigen Tagen bis Wochen ab
+- **Nicht garantiert**: 1&1 sendet nicht immer automatisch SMS-Links
+- **Automatische Erneuerung**: Bei abgelaufenen Links müssen Sie warten, bis ein neuer Link per SMS gesendet wird
+
+#### Mit Benutzername und Passwort:
 
 ```python
 from src.auth.login import ControlCenterAuth
